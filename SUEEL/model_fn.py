@@ -18,11 +18,13 @@ def model_fn(features,labels,mode,params):
         outputs = model.add_blstm_layers(inputs,lengths,False)
 
     logits = model.project_layer(outputs)
+    # 将logits规整化到0~1
+    logits = tf.nn.softmax(logits)
+
 
     loss,pred_ids,trans = model.add_crf_layer(logits,labels,lengths)
 
-    #将logits规整化到0~1
-    logits = tf.nn.softmax(logits)
+
 
     if(mode == tf.estimator.ModeKeys.PREDICT):
         print('预测')

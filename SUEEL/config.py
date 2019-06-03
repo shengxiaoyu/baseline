@@ -21,7 +21,7 @@ TRIGGER_WORDS_DICT = None
 TRIGGER_IDS=set()
 TRIGGER_ARGS_DICT={}
 CRF_TRANS = None
-
+I_IDS=set()
 
 #初始化各类模型以及词集
 def init(rootdir):
@@ -50,8 +50,10 @@ def initTags(triggerLablePath,argumentLabelPath):
             TAG_2_ID[tag] = index
             ID_2_TAG[index] = tag
             TRIGGER_TAGs.append(tag)
-            if (tag.find('B_') != -1):
+            if (tag.find('B_') != -1 and tag.find('FamilyConflict')==-1):
                 TRIGGER_IDS.add(index)
+            if(tag.find('I_')!=-1):
+                I_IDS.add(index)
             index += 1
 
     #获取参数tag
@@ -71,6 +73,8 @@ def initTags(triggerLablePath,argumentLabelPath):
                 if (trigger_id not in TRIGGER_ARGS_DICT):
                     TRIGGER_ARGS_DICT[trigger_id] = set()
                 TRIGGER_ARGS_DICT[trigger_id].add(index)
+            if (tag.find('I_') != -1):
+                I_IDS.add(index)
             index += 1
 
     TAGs_LEN = len(TAG_2_ID)
@@ -88,7 +92,7 @@ def getArgs():
     ltpPath = os.path.join(rootPath, 'ltp_data_v3.4.0')
     parser = argparse.ArgumentParser(description='Bi-LSTM+CRF')
     parser.add_argument('--root_dir', help='root dir', default=rootPath)
-    parser.add_argument('--isTraining', help='train and dev', default=False)
+    parser.add_argument('--isTraining', help='train and dev', default=True)
     parser.add_argument('--isTesting', help='test', default=True)
     parser.add_argument('--dropout_rate', help='dropout rate', default=0.5)
     parser.add_argument('--learning_rate', help='learning rate', default=0.001)
@@ -107,6 +111,7 @@ def getArgs():
     parser.add_argument('--tag2id',default=TAG_2_ID)
     parser.add_argument('--trigger_ids',default=TRIGGER_IDS)
     parser.add_argument('--trigger_args_dict',default=TRIGGER_ARGS_DICT)
+    parser.add_argument('--i_ids',default=I_IDS)
     args,_ = parser.parse_known_args()
     return args;
 

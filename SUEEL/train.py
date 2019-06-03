@@ -79,7 +79,7 @@ def main(args):
 
     if(args.isTraining):
         print('获取训练数据。。。')
-        train_inpf = functools.partial(input_fn, input_dir=(os.path.join(args.labeled_data_path, 'test')),
+        train_inpf = functools.partial(input_fn, input_dir=(os.path.join(args.labeled_data_path, 'train')),
                                        shuffe=True, num_epochs=args.num_epochs, batch_size=args.batch_size,
                                        max_sequence_length=args.max_sequence_length,embedded_dim=args.embedded_dim,wv=args.wv,tag2id=args.tag2id)
         train_total = len(list(train_inpf()))
@@ -133,10 +133,12 @@ def main(args):
 
         pred_ids2 = []
         for logit,length in zip(logits,lengths):
-            ids = optimize(length,args.num_labels,trans,logit,args.id2tag,args.trigger_ids,args.trigger_args_dict)
-            pred_ids2.append(ids)
-        print(pred_ids2)
-        print(lengths)
+            scores,ids_list = optimize(length,args.num_labels,trans,logit,args.id2tag,args.trigger_ids,args.trigger_args_dict,args.i_ids)
+            pred_ids2.append(ids_list)
+
+            pred_tags = []
+            for ids in ids_list:
+                print([args.id2tag[id] for id in ids])
 if __name__ == '__main__':
     main(getArgs())
     pass
