@@ -86,9 +86,9 @@ def initWord2Vec(word2vec_model_path):
 
 
 def getArgs():
-    rootPath = 'C:\\Users\\13314\\Desktop\\Bi-LSTM+CRF\\'
+    #rootPath = 'C:\\Users\\13314\\Desktop\\Bi-LSTM+CRF\\'
+    rootPath = '/root/lstm_crf/data'
     init(rootPath)
-    # rootPath = '/root/lstm_crf/data'
     ltpPath = os.path.join(rootPath, 'ltp_data_v3.4.0')
     parser = argparse.ArgumentParser(description='Bi-LSTM+CRF')
     parser.add_argument('--root_dir', help='root dir', default=rootPath)
@@ -101,8 +101,8 @@ def getArgs():
     parser.add_argument('--labeled_data_path', help='labeled data path',
                         default=os.path.join(os.path.join(rootPath, 'labeled'), 'Spe'))
     parser.add_argument('--max_sequence_length', help='max length of sequence', default=55)
-    parser.add_argument('--batch_size', help='batch size', default=5)
-    parser.add_argument('--num_epochs', help='num of epochs', default=1)
+    parser.add_argument('--batch_size', help='batch size', default=64)
+    parser.add_argument('--num_epochs', help='num of epochs', default=15)
     parser.add_argument('--device_map', help='which device to see', default='CPU:0')
     parser.add_argument('--embedded_dim', help='wordembeddeddim', default=200)
     parser.add_argument('--wv',help='word2vec',default=WV)
