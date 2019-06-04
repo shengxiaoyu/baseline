@@ -112,6 +112,7 @@ def getArgs():
     parser.add_argument('--trigger_ids',default=TRIGGER_IDS)
     parser.add_argument('--trigger_args_dict',default=TRIGGER_ARGS_DICT)
     parser.add_argument('--i_ids',default=I_IDS)
+    parser.add_argument('--ilp',default=False)
     args,_ = parser.parse_known_args()
     return args;
 

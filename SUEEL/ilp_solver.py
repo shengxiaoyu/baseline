@@ -84,7 +84,7 @@ def optimize(length,num_labels,trans,logits,id2tag,trigger_ids,trigger_args_dict
                 solution = m.getAttr('xn',distributions)
                 ids =  get_result(length,num_labels,solution)
                 print('Solution %d has objective %g ' % (i,objVal))
-                print(' '.join([str[id] for id in ids]))
+                print(' '.join([str(id) for id in ids]))
                 objVals.append(objVal)
                 ids_list.append(ids)
             return objVals,ids_list
