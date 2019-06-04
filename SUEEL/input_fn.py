@@ -40,6 +40,8 @@ def read_file(input_dir):
 
                 one_example = [sentence.split(),label.strip().split(),pos.strip().split()]
                 examples.append(one_example)
+
+                sentence = f.readline()
     return examples
 
 def generator_fn(input_dir,max_sequence_length,wv,tag2id,noEmbedding=False):
