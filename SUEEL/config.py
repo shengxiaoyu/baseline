@@ -5,9 +5,9 @@ __author__ = '13314409603@163.com'
 
 import argparse
 import os
-from gensim.models import Word2Vec
+
 import numpy as np
-import tensorflow as tf
+from gensim.models import Word2Vec
 
 WV = None
 TRIGGER_TAGs = None
@@ -20,7 +20,6 @@ STOP_WORDS=None
 TRIGGER_WORDS_DICT = None
 TRIGGER_IDS=set()
 TRIGGER_ARGS_DICT={}
-CRF_TRANS = None
 I_IDS=set()
 
 #初始化各类模型以及词集
@@ -114,7 +113,7 @@ def getArgs():
     parser.add_argument('--i_ids',default=I_IDS)
     parser.add_argument('--ilp',default=False)
     args,_ = parser.parse_known_args()
-    return args;
+    return args
 
 
 
