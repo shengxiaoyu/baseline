@@ -23,6 +23,26 @@ def input_fn(input_dir,shuffe,num_epochs,batch_size,max_sequence_length,embedded
     dataset = dataset.batch(batch_size)
     return dataset
 
+def read_file(input_dir):
+    result = []
+    for input_file in os.listdir(input_dir):
+        with open(os.path.join(input_dir, input_file), 'r', encoding='utf8') as f:
+            sentence = f.readline()  # 句子行
+            while sentence:
+                sentence = sentence.strip()
+                # 标记行
+                label = f.readline()
+                #pos行
+                f.readline()
+                if not label:
+                    break
+                label = label.strip()
+                length = len(sentence.split())
+
+                one_example = [sentence,label,length]
+                result.append(one_example)
+    return result
+
 def generator_fn(input_dir,max_sequence_length,wv,tag2id):
     result = []
     for input_file in os.listdir(input_dir):

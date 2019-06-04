@@ -26,10 +26,10 @@ def optimize(length,num_labels,trans,logits,id2tag,trigger_ids,trigger_args_dict
          the best solutions. Setting the parameter to 2 causes the MIP to do a systematic search for the n best solutions. For 
          both non-default settings, the PoolSolutions parameter sets the target for the number of solutions to find.'''
         m.Params.poolSearchMode = 2
-        m.Params.PoolSolutions = length
+        # m.Params.PoolSolutions = 200
         '''If you are only interested in solutions that are within a certain gap of the best solution found, you can set the PoolGap 
-        parameter. Solutions that are not within the specified gap are discarded.PoolGap是根据beat solution的比例,GapAb'''
-        m.Params.MIPGapAbs = 0.5*length
+        parameter. Solutions that are not within the specified gap are discarded.PoolGap是根据beat solution的比例'''
+        m.Params.PoolGap = 0.15
 
         distributions = m.addVars(length-1,num_labels,num_labels,vtype=GRB.BINARY,name="distributions")
 
@@ -53,7 +53,7 @@ def optimize(length,num_labels,trans,logits,id2tag,trigger_ids,trigger_args_dict
         m.addConstrs(distributions.sum('*',trigger_id,'*')>=distributions.sum('*',arg_id,'*') for trigger_id in trigger_ids for arg_id in trigger_args_dict[trigger_id] )
 
         if(m.isMIP==1):
-            print("是MIP：")
+            print("是MIP")
         else:
             print("不是MIP")
 
@@ -64,11 +64,17 @@ def optimize(length,num_labels,trans,logits,id2tag,trigger_ids,trigger_args_dict
             nSolutions = m.solCount
             print('总共标记方案：'+str(nSolutions))
 
-            objVal = m.objVal
-            print('最优解：'+str(objVal))
-
             objVals = []
             ids_list = []
+
+            objVal = m.objVal
+            print('最优解：'+str(objVal))
+            solution = m.getAttr('x',distributions)
+            ids = get_result(length,num_labels,solution)
+
+            objVals.append(objVal)
+            ids_list.append(ids)
+
             for i in range(nSolutions):
                 m.Params.solutionNumber = i
 
@@ -77,7 +83,8 @@ def optimize(length,num_labels,trans,logits,id2tag,trigger_ids,trigger_args_dict
                 #方案
                 solution = m.getAttr('xn',distributions)
                 ids =  get_result(length,num_labels,solution)
-                print('Solution %d has objective %g' %(i,objVal))
+                print('Solution %d has objective %g ' % (i,objVal))
+                print(' '.join([str[id] for id in ids]))
                 objVals.append(objVal)
                 ids_list.append(ids)
             return objVals,ids_list

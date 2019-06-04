@@ -9,7 +9,7 @@ import tensorflow as tf
 import os
 from SUEEL.model_fn import model_fn
 from SUEEL.input_fn import input_fn
-from SUEEL.input_fn import generator_fn
+from SUEEL.input_fn import read_file
 from SUEEL.config import getArgs
 import functools
 from SUEEL.ilp_solver import optimize
@@ -110,35 +110,28 @@ def main(args):
 
 
         # 取真实的tags
-        pred_true = generator_fn(input_dir=(os.path.join(args.labeled_data_path, 'test')),
-                                 max_sequence_length=args.max_sequence_length, wv=args.wv, tag2id=args.tag2id)
+        pred_true = read_file(os.path.join(args.labeled_data_path, 'test'))
 
-        targets = [x[1] for x in pred_true]
-        lengths = [x[0][1] for x in pred_true]
+        sentences = [x[0] for x in pred_true]
+        labels = [x[1] for x in pred_true]
+        lengths = [x[2] for x in pred_true]
 
 
         # blstm获得的结果
         logits = [x['logits'] for x in list(predictions)]
-        # pred = [x['pre_ids'] for x in list(predictions)]
-        # lengths = [x['lengths'] for x in list(predictions)]
-        # # 预测分析
-        # indices = [item[1] for item in args.tag2id.items() if (item[0] != '<pad>' and item[0] != 'O')]
-        # report = flat_classification_report(y_pred=pred, y_true=targets, labels=indices)
-        # print(report)
-        #
-        # with open(os.path.join(output_dir, 'predict_result.txt'), 'w', encoding='utf8') as fw:
-        #     fw.write(str(report))
 
         #使用ILP-solver优化后的结果
+        with open(os.path.join(output_dir,'predict.txt'),'w',encoding='utf-8') as fw:
+            for logit,sentence,label,length in zip(logits,sentences,labels,lengths):
+                scores,ids_list = optimize(length,args.num_labels,trans,logit,args.id2tag,args.trigger_ids,args.trigger_args_dict,args.i_ids)
 
-        pred_ids2 = []
-        for logit,length in zip(logits,lengths):
-            scores,ids_list = optimize(length,args.num_labels,trans,logit,args.id2tag,args.trigger_ids,args.trigger_args_dict,args.i_ids)
-            pred_ids2.append(ids_list)
-
-            pred_tags = []
-            for ids in ids_list:
-                print([args.id2tag[id] for id in ids])
+                print(ids_list)
+                fw.write('原句：'+sentence+'\n')
+                fw.write('目标标记：'+label+'\n')
+                index = 0
+                for socre,ids in zip(scores,ids_list):
+                    fw.write('预测结果%d:,得分%f,标记：%s \n'.format(index,socre,str(' '.join([args.id2tag[id] for id in ids]))))
+                    index+=1
 if __name__ == '__main__':
     main(getArgs())
     pass
