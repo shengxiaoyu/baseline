@@ -4,9 +4,9 @@ __doc__ = 'description'
 __author__ = '13314409603@163.com'
 
 import tensorflow as tf
+
 from model.blstm_crf_model import BLSTM_CRF
-from SUEEL.ilp_solver import optimize
-from SUEEL.config import CRF_TRANS
+
 
 def model_fn(features,labels,mode,params):
     tf.enable_eager_execution()

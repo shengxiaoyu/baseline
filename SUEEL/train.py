@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from sklearn_crfsuite.metrics import flat_classification_report
 
 __doc__ = 'description'
 __author__ = '13314409603@163.com'
 
 import tensorflow as tf
 import os
+from sklearn_crfsuite.metrics import flat_classification_report
 from SUEEL.model_fn import model_fn
 from SUEEL.input_fn import input_fn
-from SUEEL.input_fn import read_file
+from SUEEL.input_fn import generator_fn
 from SUEEL.config import getArgs
 import functools
 from SUEEL.ilp_solver import optimize
-from SUEEL.config import CRF_TRANS
 
 def main(args):
     print(args)
@@ -111,11 +110,10 @@ def main(args):
 
 
         # 取真实的tags
-        pred_true = read_file(os.path.join(args.labeled_data_path, 'test'))
-
-        sentences = [x[0] for x in pred_true]
-        labels = [x[1] for x in pred_true]
-        lengths = [x[2] for x in pred_true]
+        pred_true = generator_fn(input_dir=(os.path.join(args.labeled_data_path, 'test')),max_sequence_length = args.max_sequence_length,wv=args.wv,tag2id=args.tag2id,noEmbedding=True)
+        words_list = [x[0][0] for x in pred_true]
+        tags_list = [x[1] for x in pred_true]
+        lengths = [x[0][1] for x in pred_true]
 
         if(args.ilp):
             # blstm获得的结果
@@ -123,25 +121,26 @@ def main(args):
 
             # 使用ILP-solver优化后的结果
             with open(os.path.join(output_dir,'predict.txt'),'w',encoding='utf-8') as fw:
-                for logit,sentence,label,length in zip(logits,sentences,labels,lengths):
+                for logit,words,tags,length in zip(logits,words_list,tags_list,lengths):
                     scores,ids_list = optimize(length,args.num_labels,trans,logit,args.id2tag,args.trigger_ids,args.trigger_args_dict,args.i_ids)
-
-                    print(scores)
-                    print(ids_list)
-                    fw.write('原句：'+sentence+'\n')
-                    fw.write('目标标记：'+label+'\n')
+                    fw.write('原句：'+' '.join(words)+'\n')
+                    fw.write('目标标记：'+' '.join(tags)+'\n')
                     index = 0
                     for socre,ids in zip(scores,ids_list):
                         fw.write('预测结果%d:,得分%f,标记：%s \n' % (index,socre,str(' '.join([args.id2tag[id] for id in ids]))))
                         index+=1
-
         else:
             pred_ids_list = [x['pred_ids'] for x in list(predictions)]
+            indices = [item[1] for item in args.tag2id.items() if (item[0] != '<pad>' and item[0] != 'O')]
+
+            report = flat_classification_report(y_pred=pred_ids_list, y_true=tags_list, labels=indices)
+
             with open(os.path.join(output_dir,'predict.txt'),'w',encoding='utf-8') as fw:
-                for pred_ids,sentence,label in zip(pred_ids_list,sentences,labels):
-                    fw.write('原句：'+sentence+'\n')
-                    fw.write('目标标记：'+label+'\n')
-                    fw.write('预测结果：'+(' '.join([args.id2tag[id] for id in pred_ids])))
+                fw.write(report)
+                for pred_ids,words,tags,length in zip(pred_ids_list,words_list,tags_list,lengths):
+                    fw.write('原句：'+' '.join(words[0:length])+'\n')
+                    fw.write('目标标记：'+' '.join([args.id2tag[id] for id in tags[0:length]])+'\n')
+                    fw.write('预测结果：'+(' '.join([args.id2tag[id] for id in pred_ids[0:length]]))+'\n')
 
 if __name__ == '__main__':
     main(getArgs())

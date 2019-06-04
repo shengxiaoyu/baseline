@@ -24,7 +24,8 @@ def input_fn(input_dir,shuffe,num_epochs,batch_size,max_sequence_length,embedded
     return dataset
 
 def read_file(input_dir):
-    result = []
+    '''read Spe file,return words,tags,poses'''
+    examples = []
     for input_file in os.listdir(input_dir):
         with open(os.path.join(input_dir, input_file), 'r', encoding='utf8') as f:
             sentence = f.readline()  # 句子行
@@ -33,44 +34,22 @@ def read_file(input_dir):
                 # 标记行
                 label = f.readline()
                 #pos行
-                f.readline()
-                if not label:
+                pos = f.readline()
+                if not label or not pos:
                     break
-                label = label.strip()
-                length = len(sentence.split())
 
-                one_example = [sentence,label,length]
-                result.append(one_example)
-    return result
+                one_example = [sentence.split(),label.strip().split(),pos.strip().split()]
+                examples.append(one_example)
+    return examples
 
-def generator_fn(input_dir,max_sequence_length,wv,tag2id):
+def generator_fn(input_dir,max_sequence_length,wv,tag2id,noEmbedding=False):
     result = []
-    for input_file in os.listdir(input_dir):
-        with open(os.path.join(input_dir, input_file), 'r', encoding='utf8') as f:
-            sentence = f.readline()  # 句子行
-            while sentence:
-                # 标记行
-                label = f.readline()
-                #pos行
-                f.readline()
-                if not label:
-                    break
-                words = sentence.strip().split(' ')
-                words = list(filter(lambda word: word != '', words))
-
-                tags = label.strip().split(' ')
-                tags = list(filter(lambda word: word != '', tags))
-
-                sentence = f.readline()
-
-                if (len(words) != len(tags)):
-                    print(input_file, ' words、labels、pos数不匹配：' + sentence + ' words length:' + str(
-                        len(words)) + ' labels length:' + str(len(tags)) )
-                    continue
-                result.append(paddingAndEmbedding( words, tags, max_sequence_length,wv,tag2id))
+    examples = read_file(input_dir=input_dir)
+    for words,tags,poses in examples:
+        result.append(paddingAndEmbedding(words,tags,max_sequence_length,wv,tag2id,noEmbedding))
     return result
 
-def paddingAndEmbedding(words,tags,max_sequence_length,wv,tag2id):
+def paddingAndEmbedding(words,tags,max_sequence_length,wv,tag2id,noEmbedding=False):
     # print(fileName)
     length = len(words)
 
@@ -94,9 +73,8 @@ def paddingAndEmbedding(words,tags,max_sequence_length,wv,tag2id):
     else:
         tags = tags[:max_sequence_length]
 
-
-    words = [wv[word] for word in words]
-
+    if(not noEmbedding):
+        words = [wv[word] for word in words]
     ids = [tag2id[tag]  for tag in tags]
 
     return (words, min(length, max_sequence_length)),ids
