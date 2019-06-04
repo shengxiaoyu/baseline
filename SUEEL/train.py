@@ -72,6 +72,7 @@ def main(args):
         'id2tag':args.id2tag,
         'trigger_ids':args.trigger_ids,
         'trigger_args_dict':args.trigger_args_dict,
+        'ilp':args.ilp,
     }
 
     print('构造estimator')
@@ -116,22 +117,32 @@ def main(args):
         labels = [x[1] for x in pred_true]
         lengths = [x[2] for x in pred_true]
 
+        if(args.ilp):
+            # blstm获得的结果
+            logits = [x['logits'] for x in list(predictions)]
 
-        # blstm获得的结果
-        logits = [x['logits'] for x in list(predictions)]
+            # 使用ILP-solver优化后的结果
+            with open(os.path.join(output_dir,'predict.txt'),'w',encoding='utf-8') as fw:
+                for logit,sentence,label,length in zip(logits,sentences,labels,lengths):
+                    scores,ids_list = optimize(length,args.num_labels,trans,logit,args.id2tag,args.trigger_ids,args.trigger_args_dict,args.i_ids)
 
-        #使用ILP-solver优化后的结果
-        with open(os.path.join(output_dir,'predict.txt'),'w',encoding='utf-8') as fw:
-            for logit,sentence,label,length in zip(logits,sentences,labels,lengths):
-                scores,ids_list = optimize(length,args.num_labels,trans,logit,args.id2tag,args.trigger_ids,args.trigger_args_dict,args.i_ids)
+                    print(scores)
+                    print(ids_list)
+                    fw.write('原句：'+sentence+'\n')
+                    fw.write('目标标记：'+label+'\n')
+                    index = 0
+                    for socre,ids in zip(scores,ids_list):
+                        fw.write('预测结果%d:,得分%f,标记：%s \n' % (index,socre,str(' '.join([args.id2tag[id] for id in ids]))))
+                        index+=1
 
-                print(ids_list)
-                fw.write('原句：'+sentence+'\n')
-                fw.write('目标标记：'+label+'\n')
-                index = 0
-                for socre,ids in zip(scores,ids_list):
-                    fw.write('预测结果%d:,得分%f,标记：%s \n'.format(index,socre,str(' '.join([args.id2tag[id] for id in ids]))))
-                    index+=1
+        else:
+            pred_ids_list = [x['pred_ids'] for x in list(predictions)]
+            with open(os.path.join(output_dir,'predict.txt'),'w',encoding='utf-8') as fw:
+                for pred_ids,sentence,label in zip(pred_ids_list,sentences,labels):
+                    fw.write('原句：'+sentence+'\n')
+                    fw.write('目标标记：'+label+'\n')
+                    fw.write('预测结果：'+(' '.join([args.id2tag[id] for id in pred_ids])))
+
 if __name__ == '__main__':
     main(getArgs())
     pass

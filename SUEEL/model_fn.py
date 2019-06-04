@@ -28,11 +28,14 @@ def model_fn(features,labels,mode,params):
 
     if(mode == tf.estimator.ModeKeys.PREDICT):
         print('预测')
-
-        predictions = {
-            # 'lengths':lengths,
-            'logits':logits,
-        }
+        if(params['ilp']):
+            predictions = {
+                'logits':logits,
+            }
+        else:
+            predictions = {
+                'pred_ids': pred_ids
+            }
         #使用ilp-solver获取最优解：
 
         return tf.estimator.EstimatorSpec(mode,predictions=predictions)
