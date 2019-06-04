@@ -5,7 +5,6 @@ __author__ = '13314409603@163.com'
 import tensorflow as tf
 from tensorflow.contrib import rnn
 from tensorflow.contrib.layers.python.layers import initializers
-from SUEEL.config import CRF_TRANS
 
 class BLSTM_CRF(object):
     def __init__(self,hidden_unit,num_labels,num_layers=100,dropout_rate=0.5):
