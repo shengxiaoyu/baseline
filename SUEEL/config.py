@@ -85,15 +85,15 @@ def initWord2Vec(word2vec_model_path):
 
 
 def getArgs():
-    #rootPath = 'C:\\Users\\13314\\Desktop\\Bi-LSTM+CRF\\'
-    rootPath = '/root/lstm_crf/data'
+    rootPath = 'C:\\Users\\13314\\Desktop\\Bi-LSTM+CRF\\'
+    # rootPath = '/root/lstm_crf/data'
     init(rootPath)
     ltpPath = os.path.join(rootPath, 'ltp_data_v3.4.0')
     parser = argparse.ArgumentParser(description='Bi-LSTM+CRF')
     parser.add_argument('--root_dir', help='root dir', default=rootPath)
     parser.add_argument('--isTraining', help='train and dev', default=True)
     parser.add_argument('--isTesting', help='test', default=True)
-    parser.add_argument('--dropout_rate', help='dropout rate', default=0.9)
+    parser.add_argument('--dropout_rate', help='dropout rate', default=0.5)
     parser.add_argument('--learning_rate', help='learning rate', default=0.001)
     parser.add_argument('--hidden_units', help='hidden units', default=100)
     parser.add_argument('--num_layers', help='num of layers', default=1)
@@ -101,7 +101,7 @@ def getArgs():
                         default=os.path.join(os.path.join(rootPath, 'labeled'), 'Spe'))
     parser.add_argument('--max_sequence_length', help='max length of sequence', default=55)
     parser.add_argument('--batch_size', help='batch size', default=64)
-    parser.add_argument('--num_epochs', help='num of epochs', default=15)
+    parser.add_argument('--num_epochs', help='num of epochs', default=2)
     parser.add_argument('--device_map', help='which device to see', default='CPU:0')
     parser.add_argument('--embedded_dim', help='wordembeddeddim', default=200)
     parser.add_argument('--wv',help='word2vec',default=WV)

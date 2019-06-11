@@ -9,13 +9,12 @@ from model.blstm_crf_model import BLSTM_CRF
 
 
 def model_fn(features,labels,mode,params):
-    tf.enable_eager_execution()
     inputs,lengths = features
     model = BLSTM_CRF(params['hidden_units'],params['num_labels'],params['num_layers'],params['dropout_rate'])
     if(mode==tf.estimator.ModeKeys.TRAIN):
-        outputs = model.add_blstm_layers(inputs,lengths,True)
+        outputs = model.add_blstm_layers(inputs,lengths,is_training=True)
     else:
-        outputs = model.add_blstm_layers(inputs,lengths,False)
+        outputs = model.add_blstm_layers(inputs,lengths,is_training=False)
 
     logits = model.project_layer(outputs)
     # 将logits规整化到0~1
@@ -42,7 +41,6 @@ def model_fn(features,labels,mode,params):
     elif(mode == tf.estimator.ModeKeys.EVAL):
         print('评估')
         weights = tf.sequence_mask(lengths, maxlen=params['max_sequence_length'])
-        # indices = [item[1] for item in CONFIG.TAG_2_ID.items() if (item[0] != '<pad>' and item[0] != 'O')]
         metrics = {
             'acc': tf.metrics.accuracy(labels, pred_ids, weights)
         }

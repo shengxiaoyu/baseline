@@ -13,18 +13,17 @@ class BLSTM_CRF(object):
         self.dropout_rate = dropout_rate
         self.num_labels = num_labels
 
-    def _get_a_lstm_layer_(self,is_training):
+    def _get_a_lstm_layer_(self):
         lstm_cell = rnn.LSTMCell(self.hidden_nuit)
-        if (self.dropout_rate and is_training):
-            lstm_cell = rnn.DropoutWrapper(lstm_cell, input_keep_prob=self.dropout_rate,
-                                              output_keep_prob=self.dropout_rate)
         return lstm_cell
 
     def add_blstm_layers(self,inputs,lengths,is_training):
-        # inputs = tf.transpose(inputs, perm=[1, 0, 2])
+        #对输入dropout
+        if is_training:
+            inputs = tf.nn.dropout(inputs,self.dropout_rate)
 
-        lstm_cell_fw = self._get_a_lstm_layer_(is_training)
-        lstm_cell_bw = self._get_a_lstm_layer_(is_training)
+        lstm_cell_fw = self._get_a_lstm_layer_()
+        lstm_cell_bw = self._get_a_lstm_layer_()
 
         if(self.num_layers>1 ):
             lstm_cell_fw = rnn.MultiRNNCell([self._get_a_lstm_layer_(is_training) for _ in range(self.num_layers)],state_is_tuple=True)
@@ -33,12 +32,10 @@ class BLSTM_CRF(object):
 
         outputs,_ = tf.nn.bidirectional_dynamic_rnn(lstm_cell_fw,lstm_cell_bw,inputs,dtype=tf.float32)
         outputs = tf.concat(outputs,axis=2)
-        # print('LSTM联合层')
-        # output_fw, _ = lstm_cell_fw(inputs)
-        # output_bw, _ = lstm_cell_bw(inputs)  # shape 49*batch_size*100
-        # outputs = tf.concat([output_fw, output_bw], axis=-1)  # 40*batch_size*200
-        # 转换回正常输出
-        # outputs = tf.transpose(outputs, perm=[1, 0, 2])  # batch_size*40*200
+
+        #对输出dropout
+        if is_training:
+            outputs = tf.nn.dropout(outputs,self.dropout_rate)
 
         return outputs
 
@@ -50,7 +47,7 @@ class BLSTM_CRF(object):
         trans = tf.get_variable(
             "transitions",
             shape=[self.num_labels, self.num_labels],
-            initializer=initializers.xavier_initializer())
+            dtype=tf.float32)
         pred_ids, _ = tf.contrib.crf.crf_decode(inputs,trans,lengths)
         if(labels is not None):
             log_likelihood, _ = tf.contrib.crf.crf_log_likelihood(
