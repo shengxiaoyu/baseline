@@ -22,16 +22,18 @@ class BLSTM_CRF(object):
         if is_training:
             inputs = tf.nn.dropout(inputs,self.dropout_rate)
 
-        lstm_cell_fw = self._get_a_lstm_layer_()
-        lstm_cell_bw = self._get_a_lstm_layer_()
+        # 转换为lstm时间序列输入
+        t = tf.transpose(inputs, perm=[1, 0, 2])
+        lstm_cell_fw = tf.contrib.rnn.LSTMBlockFusedCell(self.hidden_nuit)
+        lstm_cell_bw = tf.contrib.rnn.LSTMBlockFusedCell(self.hidden_nuit)
+        lstm_cell_bw = tf.contrib.rnn.TimeReversedFusedRNN(lstm_cell_bw)
 
-        if(self.num_layers>1 ):
-            lstm_cell_fw = rnn.MultiRNNCell([self._get_a_lstm_layer_(is_training) for _ in range(self.num_layers)],state_is_tuple=True)
-            lstm_cell_bw = rnn.MultiRNNCell([self._get_a_lstm_layer_(is_training) for _ in range(self.num_layers)],state_is_tuple=True)
-
-
-        outputs,_ = tf.nn.bidirectional_dynamic_rnn(lstm_cell_fw,lstm_cell_bw,inputs,dtype=tf.float32)
-        outputs = tf.concat(outputs,axis=2)
+        print('LSTM联合层')
+        output_fw, _ = lstm_cell_fw(t, dtype=tf.float32, sequence_length=lengths)
+        output_bw, _ = lstm_cell_bw(t, dtype=tf.float32, sequence_length=lengths)  # shape 49*batch_size*100
+        outputs = tf.concat([output_fw, output_bw], axis=-1)  # 40*batch_size*200
+        # 转换回正常输出
+        outputs = tf.transpose(outputs, perm=[1, 0, 2])  # batch_size*40*200
 
         #对输出dropout
         if is_training:
