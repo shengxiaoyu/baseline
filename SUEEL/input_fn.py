@@ -28,19 +28,43 @@ def read_file(input_dir):
     examples = []
     for input_file in os.listdir(input_dir):
         with open(os.path.join(input_dir, input_file), 'r', encoding='utf8') as f:
-            sentence = f.readline()  # 句子行
+            # last_sentence = f.readline()
+            # last_words = last_sentence.strip().split()  # 句子行
+            # last_labels = f.readline().strip().split()
+            # last_pos = f.readline().strip().split()
+
+            sentence = f.readline()
             while sentence:
-                sentence = sentence.strip()
-                # 标记行
+                # '''判断是否是同一个句子'''
+                # if(sentence!=last_sentence):
+                #     examples.append([last_words,last_labels,last_pos])
+                #     last_sentence = sentence
+                #     last_words = last_sentence.strip().split()  # 句子行
+                #     last_labels = f.readline().strip().split()
+                #     last_pos = f.readline().strip().split()
+                # else:
+                #     #融合labels
+                #     current_labels = f.readline().strip().split()
+                #     for index,label in enumerate(current_labels):
+                #         if(label!='O'):
+                #             if(last_labels[index]!='O'):
+                #                 last_labels[index] = label
+                #     #丢弃pos行
+                #     f.readline()
                 label = f.readline()
-                #pos行
-                pos = f.readline()
-                if not label or not pos:
+                if not label:
                     break
+                pos = f.readline()
 
-                one_example = [sentence.split(),label.strip().split(),pos.strip().split()]
-                examples.append(one_example)
+                words = sentence.strip().split(' ')
+                words = list(filter(lambda word: word != '', words))
 
+                tags = label.strip().split(' ')
+                tags = list(filter(lambda word: word != '', tags))
+
+                posTags = pos.strip().split(' ')
+                posTags = list(filter(lambda word: word != '', posTags))
+                examples.append([words,tags,posTags])
                 sentence = f.readline()
     return examples
 

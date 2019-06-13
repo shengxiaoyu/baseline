@@ -23,8 +23,8 @@ def main(args):
     # 配置哪块gpu可见
     os.environ['CUDA_VISIBLE_DEVICES'] = args.device_map
     # 在re train 的时候，才删除上一轮产出的文件，在predicted 的时候不做clean
-    output_dir = os.path.join(args.root_dir, 'output_' + str(args.num_epochs) + '_' + str(
-        args.batch_size)+'_'+str(args.num_layers) + '_' + 'baseline_SUEEL')
+    output_dir = os.path.join(args.root_dir, 'output_' + str(args.num_epochs) + '_' +
+                              str(args.batch_size)+'_'+str(args.num_layers) + '_' + 'baseline_SUEEL')
     if args.isTraining:
         if os.path.exists(output_dir):
             def del_file(path):

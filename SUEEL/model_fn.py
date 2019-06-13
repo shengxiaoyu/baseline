@@ -13,7 +13,7 @@ def model_fn(features,labels,mode,params):
 
     #对输入dropout
     is_training = (mode == tf.estimator.ModeKeys.TRAIN)
-    inputs = tf.layers.dropout(inputs, rate=params['dropout_rate'], training=is_training)
+    # inputs = tf.layers.dropout(inputs, rate=params['dropout_rate'], training=is_training)
 
     # LSTM
     print('构造LSTM层')
@@ -47,14 +47,14 @@ def model_fn(features,labels,mode,params):
 
     if(mode == tf.estimator.ModeKeys.PREDICT):
         print('预测')
-        if(params['ilp']):
-            predictions = {
-                'logits':logits,
-            }
-        else:
-            predictions = {
-                'pred_ids': pred_ids
-            }
+        # if(params['ilp']):
+        #     predictions = {
+        #         'logits':logits,
+        #     }
+        # else:
+        predictions = {
+            'pred_ids': pred_ids
+        }
         return tf.estimator.EstimatorSpec(mode,predictions=predictions)
     else:
         # Loss
