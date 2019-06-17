@@ -24,11 +24,11 @@ I_IDS=set()
 
 #初始化各类模型以及词集
 def init(rootdir):
-    initTags(os.path.join(rootdir,'triggerLabels.txt'),os.path.join(rootdir, 'argumentLabels.txt'))
-    initWord2Vec(os.path.join(os.path.join(rootdir, 'word2vec'),'word2vec.model'))
+    initTags(os.path.join(rootdir,'full_trigger_labels.txt'),os.path.join(rootdir, 'full_argu_labels.txt'))
+    initWord2Vec(os.path.join(os.path.join(rootdir, 'newWord2vec'),'word2vec.model'))
 
 def initTags(triggerLablePath,argumentLabelPath):
-    global TAG_2_ID, ID_2_TAG,TAGs_LEN,TRIGGER_TAGs,ARGU_TAGs,TRIGGER_IDS,TRIGGER_ARGS_DICT
+    global TAG_2_ID, ID_2_TAG,TAGs_LEN,TRIGGER_TAGs,ARGU_TAGs,TRIGGER_IDS,TRIGGER_ARGS_DICT,I_IDS
     TAG_2_ID={}
     ID_2_TAG={}
     TRIGGER_TAGs=[]
@@ -85,25 +85,24 @@ def initWord2Vec(word2vec_model_path):
 
 
 def getArgs():
-    #rootPath = 'C:\\Users\\13314\\Desktop\\Bi-LSTM+CRF\\'
+    # rootPath = 'C:\\Users\\13314\\Desktop\\Bi-LSTM+CRF\\'
     rootPath = '/root/lstm_crf/data'
     init(rootPath)
-    ltpPath = os.path.join(rootPath, 'ltp_data_v3.4.0')
     parser = argparse.ArgumentParser(description='Bi-LSTM+CRF')
     parser.add_argument('--root_dir', help='root dir', default=rootPath)
-    parser.add_argument('--isTraining', help='train and dev', default=False)
+    parser.add_argument('--isTraining', help='train and dev', default=True)
     parser.add_argument('--isTesting', help='test', default=True)
-    parser.add_argument('--dropout_rate', help='dropout rate', default=0.9)
+    parser.add_argument('--dropout_rate', help='dropout rate', default=0.1)
     parser.add_argument('--learning_rate', help='learning rate', default=0.001)
     parser.add_argument('--hidden_units', help='hidden units', default=100)
     parser.add_argument('--num_layers', help='num of layers', default=1)
     parser.add_argument('--labeled_data_path', help='labeled data path',
-                        default=os.path.join(os.path.join(rootPath, 'labeled'), 'Merge_for_first'))
+                        default=os.path.join(os.path.join(rootPath, 'labeled'), 'Merge_for_baseline'))
     parser.add_argument('--max_sequence_length', help='max length of sequence', default=55)
     parser.add_argument('--batch_size', help='batch size', default=64)
-    parser.add_argument('--num_epochs', help='num of epochs', default=15)
+    parser.add_argument('--num_epochs', help='num of epochs', default=20)
     parser.add_argument('--device_map', help='which device to see', default='CPU:0')
-    parser.add_argument('--embedded_dim', help='wordembeddeddim', default=300)
+    parser.add_argument('--embedded_dim', help='wordembeddeddim', default=200)
     parser.add_argument('--wv',help='word2vec',default=WV)
     parser.add_argument('--num_labels',help='num of label types',default=TAGs_LEN)
     parser.add_argument('--id2tag',default=ID_2_TAG)
