@@ -90,7 +90,7 @@ def getArgs():
     init(rootPath)
     parser = argparse.ArgumentParser(description='Bi-LSTM+CRF')
     parser.add_argument('--root_dir', help='root dir', default=rootPath)
-    parser.add_argument('--isTraining', help='train and dev', default=True)
+    parser.add_argument('--isTraining', help='train and dev', default=False)
     parser.add_argument('--isTesting', help='test', default=True)
     parser.add_argument('--dropout_rate', help='dropout rate', default=0.1)
     parser.add_argument('--learning_rate', help='learning rate', default=0.001)
@@ -110,7 +110,7 @@ def getArgs():
     parser.add_argument('--trigger_ids',default=TRIGGER_IDS)
     parser.add_argument('--trigger_args_dict',default=TRIGGER_ARGS_DICT)
     parser.add_argument('--i_ids',default=I_IDS)
-    parser.add_argument('--ilp',default=False)
+    parser.add_argument('--ilp',default=True)
     args,_ = parser.parse_known_args()
     return args
 

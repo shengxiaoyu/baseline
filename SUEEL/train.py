@@ -125,7 +125,7 @@ def main(args):
                 for logit,words,tags,length in zip(logits,words_list,tags_list,lengths):
                     scores,ids_list = optimize(length,args.num_labels,trans,logit,args.id2tag,args.trigger_ids,args.trigger_args_dict,args.i_ids)
                     fw.write('原句：'+' '.join(words)+'\n')
-                    fw.write('目标标记：'+' '.join(tags)+'\n')
+                    fw.write('目标标记：'+' '.join([args.id2tag[id] for id in tags])+'\n')
                     index = 0
                     for socre,ids in zip(scores,ids_list):
                         fw.write('预测结果%d:,得分%f,标记：%s \n' % (index,socre,str(' '.join([args.id2tag[id] for id in ids]))))
