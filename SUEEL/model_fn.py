@@ -37,7 +37,7 @@ def model_fn(features,labels,mode,params):
     # 全连接层
     logits = tf.layers.dense(outputs, params['num_labels'])  # batch_size*40*len(tags)
 
-    # logits = tf.nn.softmax(logits)
+    logits = tf.nn.softmax(logits,axis=2)
 
     print('CRF层')
     crf_params = tf.get_variable("transitions", [params['num_labels'], params['num_labels']], dtype=tf.float32)

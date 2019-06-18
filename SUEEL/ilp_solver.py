@@ -5,7 +5,7 @@ __author__ = '13314409603@163.com'
 
 from gurobipy import *
 
-def optimize(length,num_labels,trans,logits,id2tag,trigger_ids,trigger_args_dict,i_ids):
+def optimize(length,num_labels,trans,logits,trigger_ids,trigger_args_dict,i_ids):
     '''
 
     :param length: 句长
@@ -41,16 +41,18 @@ def optimize(length,num_labels,trans,logits,id2tag,trigger_ids,trigger_args_dict
         m.setObjective(obj,GRB.MAXIMIZE)
 
         #C1:each word should be and only be annotated with one label
-        m.addConstrs((distributions.sum(i,'*','*')==1 for i in range(length-1)),name='con1')
+        c1 = m.addConstrs((distributions.sum(i,'*','*')==1 for i in range(length-1)),name='C1')
 
         #C2:一个v成立，则一定有下一个v成立
-        m.addConstrs(distributions.sum(i,'*',h)==distributions.sum(i+1,h,'*') for i in range(length-2) for h in range(num_labels))
+        c2 = m.addConstrs(distributions.sum(i,'*',h)==distributions.sum(i+1,h,'*') for i in range(length-2) for h in range(num_labels))
 
-        #C3:一个标记为I_label,则上一个要么事I_label,要么是B_label
-        m.addConstrs( distributions.sum(i,l,'*')==distributions[i-1,l-1,l]+distributions[i-1,l,l] for i in range(1,length-1) for l in i_ids)
+        #C3:一个标记为I_label,则上一个要么是I_label,要么是B_label
+            #I_Label不可能作为第一个
+        c3_1 = m.addConstrs((distributions.sum(0,l,'*')==0 for l in i_ids))
+        c3_2 = m.addConstrs( (distributions.sum(i,'*',l)==distributions[i,l-1,l]+distributions[i,l,l] for i in range(1,length-1) for l in i_ids),name='C3_2')
 
         #C4：必须出现触发词才能出现事件的参数,即触发词出现的次数大于参数出现的次数
-        m.addConstrs(distributions.sum('*',trigger_id,'*')>=distributions.sum('*',arg_id,'*') for trigger_id in trigger_ids for arg_id in trigger_args_dict[trigger_id] )
+        c4 = m.addConstrs((distributions.sum(0,trigger_id,'*')+distributions.sum('*','*',trigger_id)>=distributions.sum(0,arg_id,'*')+distributions.sum('*','*',arg_id) for trigger_id in trigger_ids for arg_id in trigger_args_dict[trigger_id]),name='C4')
 
         if(m.isMIP==1):
             print("是MIP")

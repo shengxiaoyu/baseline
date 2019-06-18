@@ -123,13 +123,15 @@ def main(args):
             # 使用ILP-solver优化后的结果
             with open(os.path.join(output_dir,'predict.txt'),'w',encoding='utf-8') as fw:
                 for logit,words,tags,length in zip(logits,words_list,tags_list,lengths):
-                    scores,ids_list = optimize(length,args.num_labels,trans,logit,args.id2tag,args.trigger_ids,args.trigger_args_dict,args.i_ids)
+                    scores,ids_list = optimize(length,args.num_labels,trans,logit,args.trigger_ids,args.trigger_args_dict,args.i_ids)
                     fw.write('原句：'+' '.join(words)+'\n')
                     fw.write('目标标记：'+' '.join([args.id2tag[id] for id in tags])+'\n')
                     index = 0
-                    for socre,ids in zip(scores,ids_list):
-                        fw.write('预测结果%d:,得分%f,标记：%s \n' % (index,socre,str(' '.join([args.id2tag[id] for id in ids]))))
-                        index+=1
+                    if(scores!=None):
+                        for socre,ids in zip(scores,ids_list):
+                            fw.write('预测结果%d:,得分%f,标记：%s \n' % (index,socre,str(' '.join([args.id2tag[id] for id in ids]))))
+                            index+=1
+                            fw.flush()
         else:
             pred_ids_list = [x['pred_ids'] for x in list(predictions)]
             indices = [item[1] for item in args.tag2id.items() if (item[0] != '<pad>' and item[0] != 'O')]
