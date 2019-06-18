@@ -47,7 +47,7 @@ def optimize(length,num_labels,trans,logits,id2tag,trigger_ids,trigger_args_dict
         m.addConstrs(distributions.sum(i,'*',h)==distributions.sum(i+1,h,'*') for i in range(length-2) for h in range(num_labels))
 
         #C3:一个标记为I_label,则上一个要么事I_label,要么是B_label
-        m.addConstrs( distributions.sum(i,h,'*')==distributions[i-1,h-1,h]+distributions[i-1,h,h] for i in range(1,length-1) for l in i_ids)
+        m.addConstrs( distributions.sum(i,l,'*')==distributions[i-1,l-1,l]+distributions[i-1,l,l] for i in range(1,length-1) for l in i_ids)
 
         #C4：必须出现触发词才能出现事件的参数,即触发词出现的次数大于参数出现的次数
         m.addConstrs(distributions.sum('*',trigger_id,'*')>=distributions.sum('*',arg_id,'*') for trigger_id in trigger_ids for arg_id in trigger_args_dict[trigger_id] )
@@ -85,8 +85,19 @@ def optimize(length,num_labels,trans,logits,id2tag,trigger_ids,trigger_args_dict
                 ids =  get_result(length,num_labels,solution)
                 print('Solution %d has objective %g ' % (i,objVal))
                 print(' '.join([str(id) for id in ids]))
-                objVals.append(objVal)
-                ids_list.append(ids)
+                has_same = False
+                for old_ids in ids_list:
+                    is_same = True
+                    for old_id,id in zip(old_ids,ids):
+                        if(old_id!=id):
+                            is_same = False
+                            break
+                    if(is_same):
+                        has_same=True
+                        break
+                if(not has_same):
+                    objVals.append(objVal)
+                    ids_list.append(ids)
             return objVals,ids_list
         else:
             return None,None
